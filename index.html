@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MegaMart | Live Marketplace</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans text-gray-900 min-h-screen flex flex-col">
+
+    <header class="bg-slate-900 text-white sticky top-0 z-40 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-2 text-2xl font-black tracking-wider text-amber-500 cursor-pointer">
+                <i class="fa-solid fa-bolt"></i> MEGAMART
+            </div>
+
+            <div class="w-full sm:max-w-xl relative flex items-center">
+                <input 
+                    type="text" 
+                    id="searchBar" 
+                    placeholder="Search products instantly..." 
+                    class="w-full pl-4 pr-12 py-2 bg-white text-gray-900 rounded-lg border-none focus:ring-2 focus:ring-amber-500 outline-none transition"
+                >
+                <i class="fa-solid fa-magnifying-glass absolute right-4 text-gray-400"></i>
+            </div>
+
+            <div class="flex items-center gap-4 text-sm font-medium">
+                <span class="text-gray-300 hidden md:inline">Hello, Merchant Dashboard</span>
+                <i class="fa-solid fa-cart-shopping text-xl cursor-pointer hover:text-amber-500 transition"></i>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl w-full mx-auto px-4 py-8 flex-grow">
+        <div class="mb-8 bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-2xl p-6 shadow-lg">
+            <h1 class="text-3xl font-black mb-1">Your Ultra Marketplace</h1>
+            <p class="text-amber-100 text-sm">Click the floating yellow <span class="font-bold text-white">+</span> button to open your device gallery and post a real product!</p>
+        </div>
+
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-xl font-extrabold text-slate-800">Live Feed</h2>
+            <span id="productCount" class="text-xs font-bold bg-slate-200 text-slate-700 px-2.5 py-1 rounded-full">Showing 3 items</span>
+        </div>
+
+        <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            </div>
+
+        <div id="emptyState" class="hidden text-center py-16 flex flex-col items-center">
+            <i class="fa-solid fa-box-open text-5xl text-gray-300 mb-4"></i>
+            <h3 class="text-lg font-bold text-gray-700">No products found</h3>
+            <p class="text-gray-500 text-sm">Try searching something else or add your own item!</p>
+        </div>
+    </main>
+
+    <button 
+        id="openModalBtn"
+        class="fixed bottom-6 right-6 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold h-14 w-14 rounded-full shadow-2xl flex items-center justify-center text-2xl transition-all duration-300 hover:scale-110 active:scale-95 z-50 cursor-pointer"
+        title="Post a New Product"
+    >
+        <i class="fa-solid fa-plus"></i>
+    </button>
+
+    <div id="modalBackdrop" class="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl transform transition-all duration-300" id="modalContainer">
+            
+            <div class="bg-slate-900 text-white p-4 flex items-center justify-between">
+                <h3 class="font-extrabold text-lg"><i class="fa-solid fa-plus-square text-amber-500 mr-2"></i>Post Your Product</h3>
+                <button id="closeModalBtn" class="text-gray-400 hover:text-white transition cursor-pointer text-xl">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <form id="productForm" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Product Title</label>
+                    <input type="text" id="prodTitle" required placeholder="e.g., Premium Wireless Headphones" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm">
+                </div>
+                
+                <div>
+                    <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Price ($)</label>
+                    <input type="number" step="0.01" min="0" id="prodPrice" required placeholder="59.99" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Description</label>
+                    <textarea id="prodDesc" rows="3" required placeholder="Describe your product features, condition, specs..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Product Image</label>
+                    <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition p-2">
+                        <div class="flex flex-col items-center justify-center pt-5 pb-6 text-center" id="uploadPlaceholder">
+                            <i class="fa-solid fa-images text-2xl text-gray-400 mb-2"></i>
+                            <p class="text-xs text-gray-500 font-semibold">Click to open Gallery / Files</p>
+                            <p class="text-[10px] text-gray-400">PNG, JPG, or JPEG</p>
+                        </div>
+                        <img id="imagePreview" class="hidden h-full w-full object-contain rounded-lg" />
+                        <input type="file" id="prodImageFile" accept="image/*" required class="hidden" />
+                    </label>
+                </div>
+
+                <div class="pt-2">
+                    <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-2.5 rounded-lg shadow transition transform active:scale-95 cursor-pointer">
+                        Publish Product Live
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Store marketplace items in memory
+        let products = [
+            { id: 1, title: "Quantum Sound Pro Headphones", price: 189.99, desc: "Noise-cancelling over-ear headphones with 40h battery life and pure studio audio playback.", image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&q=80" },
+            { id: 2, title: "AeroRun Lightweight Sneakers", price: 75.50, desc: "Breathable mesh runners built for comfort, agility, and cross-training longevity.", image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500&q=80" },
+            { id: 3, title: "Minimalist Matte Stainless Flask", price: 29.95, desc: "Vacuum insulated water bottle that keeps liquids ice cold for 24 hours or piping hot for 12 hours.", image: "https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=500&q=80" }
+        ];
+
+        const productGrid = document.getElementById('productGrid');
+        const emptyState = document.getElementById('emptyState');
+        const productCount = document.getElementById('productCount');
+        const searchBar = document.getElementById('searchBar');
+        const modalBackdrop = document.getElementById('modalBackdrop');
+        const productForm = document.getElementById('productForm');
+        const openModalBtn = document.getElementById('openModalBtn');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        
+        const imageFileInput = document.getElementById('prodImageFile');
+        const imagePreview = document.getElementById('imagePreview');
+        const uploadPlaceholder = document.getElementById('uploadPlaceholder');
+
+        let tempImageBase64 = "";
+
+        // Render products into grid UI
+        function renderProducts(searchQuery = '') {
+            productGrid.innerHTML = '';
+            const query = searchQuery.toLowerCase().trim();
+            const filtered = products.filter(p => p.title.toLowerCase().includes(query) || p.desc.toLowerCase().includes(query));
+
+            productCount.innerText = `Showing ${filtered.length} item${filtered.length === 1 ? '' : 's'}`;
+
+            if (filtered.length === 0) {
+                emptyState.classList.remove('hidden');
+                return;
+            }
+            emptyState.classList.add('hidden');
+
+            filtered.forEach(product => {
+                const card = document.createElement('div');
+                card.className = "bg-white rounded-xl shadow-xs hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 flex flex-col group fade-in";
+                
+                card.innerHTML = `
+                    <div class="relative overflow-hidden aspect-square bg-gray-100 flex items-center justify-center">
+                        <img src="${product.image}" alt="${product.title}" class="object-cover w-full h-full group-hover:scale-105 transition duration-500">
+                    </div>
+                    <div class="p-4 flex flex-col flex-grow justify-between">
+                        <div>
+                            <h3 class="font-bold text-gray-800 text-sm line-clamp-1 group-hover:text-amber-600 transition">${product.title}</h3>
+                            <p class="text-xs text-gray-500 mt-1 line-clamp-2">${product.desc}</p>
+                        </div>
+                        <div class="mt-4 flex items-center justify-between">
+                            <span class="text-lg font-black text-slate-900">$${parseFloat(product.price).toFixed(2)}</span>
+                            <button class="bg-slate-900 text-white group-hover:bg-amber-500 group-hover:text-slate-950 px-3 py-1.5 rounded-lg transition text-xs font-bold">
+                                Buy Now
+                            </button>
+                        </div>
+                    </div>
+                `;
+                productGrid.appendChild(card);
+            });
+        }
+
+        // Live Search Filtering
+        searchBar.addEventListener('input', (e) => {
+            renderProducts(e.target.value);
+        });
+
+        // Toggle Modal Functions
+        openModalBtn.addEventListener('click', () => {
+            modalBackdrop.classList.remove('hidden');
+            modalBackdrop.classList.add('flex');
+        });
+
+        function closeFormModal() {
+            modalBackdrop.classList.remove('flex');
+            modalBackdrop.classList.add('hidden');
+            productForm.reset();
+            // Reset preview area
+            imagePreview.src = "";
+            imagePreview.classList.add('hidden');
+            uploadPlaceholder.classList.remove('hidden');
+            tempImageBase64 = "";
+        }
+
+        closeModalBtn.addEventListener('click', closeFormModal);
+
+        // Listen for Image Upload / Selection
+        imageFileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    // Save converted file data
+                    tempImageBase64 = event.target.result;
+                    // Show image layout preview inside modal box
+                    imagePreview.src = tempImageBase64;
+                    imagePreview.classList.remove('hidden');
+                    uploadPlaceholder.classList.add('hidden');
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Handle Add New Product Form Submit
+        productForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const title = document.getElementById('prodTitle').value;
+            const price = parseFloat(document.getElementById('prodPrice').value);
+            const desc = document.getElementById('prodDesc').value;
+
+            // Fallback image secure check if nothing uploaded
+            const finalImage = tempImageBase64 || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=500&q=80";
+
+            // Create new object pushing into database array
+            const newProduct = {
+                id: Date.now(),
+                title: title,
+                price: price,
+                desc: desc,
+                image: finalImage
+            };
+
+            products.unshift(newProduct); // Add to beginning of grid feed
+            renderProducts(); // Refresh visual grid
+            closeFormModal(); // Hide structural modal
+        });
+
+        // Initialize display setup
+        renderProducts();
+    </script>
+</body>
+</html>
