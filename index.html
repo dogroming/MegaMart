@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MegaMart | Live Marketplace</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans text-gray-900 min-h-screen flex flex-col">
+
+    <header class="bg-slate-900 text-white sticky top-0 z-40 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-2 text-2xl font-black tracking-wider text-amber-500 cursor-pointer">
+                <i class="fa-solid fa-bolt"></i> MEGAMART
+            </div>
+
+            <div class="w-full sm:max-w-xl relative flex items-center">
+                <input 
+                    type="text" 
+                    id="searchBar" 
+                    placeholder="Search products instantly..." 
+                    class="w-full pl-4 pr-12 py-2 bg-white text-gray-900 rounded-lg border-none focus:ring-2 focus:ring-amber-500 outline-none transition"
+                >
+                <i class="fa-solid fa-magnifying-glass absolute right-4 text-gray-400"></i>
+            </div>
+
+            <div class="flex items-center gap-4 text-sm font-medium">
+                <span class="text-gray-300 hidden md:inline">Hello, Admin Dashboard</span>
+                <a href="https://wa.me/96179482984" target="_blank" class="flex items-center gap-1.5 text-emerald-400 font-bold bg-emerald-950/50 px-3 py-1.5 rounded-lg border border-emerald-800">
+                    <i class="fa-brands fa-whatsapp text-base"></i> Support Live
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl w-full mx-auto px-4 py-8 flex-grow">
+        <div class="mb-8 bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-2xl p-6 shadow-lg">
+            <h1 class="text-3xl font-black mb-1">Your WhatsApp Marketplace</h1>
+            <p class="text-amber-100 text-sm">Every time someone clicks **Buy**, they're directed straight to your WhatsApp line (**+961 79 482 984**) to complete the purchase!</p>
+        </div>
+
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-xl font-extrabold text-slate-800">Live Feed</h2>
+            <span id="productCount" class="text-xs font-bold bg-slate-200 text-slate-700 px-2.5 py-1 rounded-full">Showing 0 items</span>
+        </div>
+
+        <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            </div>
+
+        <div id="emptyState" class="hidden text-center py-16 flex flex-col items-center">
+            <i class="fa-solid fa-box-open text-5xl text-gray-300 mb-4"></i>
+            <h3 class="text-lg font-bold text-gray-700">No products found</h3>
+            <p class="text-gray-500 text-sm">Try searching something else or add your own item!</p>
+        </div>
+    </main>
+
+    <button 
+        id="openModalBtn"
+        class="fixed bottom-6 right-6 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold h-14 w-14 rounded-full shadow-2xl flex items-center justify-center text-2xl transition-all duration-300 hover:scale-110 active:scale-95 z-50 cursor-pointer"
+        title="Post a New Product"
+    >
+        <i class="fa-solid fa-plus"></i>
+    </button>
+
+    <div id="modalBackdrop" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl transform transition-all duration-300" id="modalContainer">
+            
+            <div class="bg-slate-900 text-white p-4 flex items-center justify-between">
+                <h3 class="font-extrabold text-lg"><i class="fa-solid fa-plus-square text-amber-500 mr-2"></i>Post Your Product</h3>
+                <button id="closeModalBtn" type="button" class="text-gray-400 hover:text-white transition cursor-pointer text-xl">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <form id="productForm" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Product Title</label>
+                    <input type="text" id="prodTitle" required placeholder="e.g., Premium Wireless Headphones" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm">
+                </div>
+                
+                <div>
+                    <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Price ($)</label>
+                    <input type="number" step="0.01" min="0" id="prodPrice" required placeholder="59.99" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Description</label>
+                    <textarea id="prodDesc" rows="3" required placeholder="Describe your product features, condition, specs..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Product Image</label>
+                    <input type="file" id="prodImageFile" accept="image/*" class="hidden">
+                    <div id="uploadBox" class="flex flex-col items-center justify-center w-full h-36 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 p-2 relative cursor-pointer">
+                        <div class="flex flex-col items-center justify-center text-center" id="uploadPlaceholder">
+                            <i class="fa-solid fa-images text-2xl text-gray-400 mb-2"></i>
+                            <button type="button" id="triggerFileBtn" class="bg-slate-800 text-white text-xs font-bold px-3 py-1.5 rounded-md hover:bg-amber-500 hover:text-slate-950 transition cursor-pointer shadow-sm">
+                                Open Photo Gallery
+                            </button>
+                            <p class="text-[10px] text-gray-400 mt-1">Supports PNG, JPG, JPEG</p>
+                        </div>
+                        <img id="imagePreview" class="hidden h-full w-full object-contain rounded-lg" alt="Preview" />
+                    </div>
+                </div>
+
+                <div class="pt-2">
+                    <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-2.5 rounded-lg shadow transition transform active:scale-95 cursor-pointer">
+                        Publish Product Live
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Your WhatsApp Number configured globally (Using Lebanon country code +961)
+        const MY_WHATSAPP_NUMBER = "96179482984";
+
+        const defaultProducts = [
+            { id: 1, title: "Quantum Sound Pro Headphones", price: 189.99, desc: "Noise-cancelling over-ear headphones with 40h battery life and pure studio audio playback.", image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&q=80" },
+            { id: 2, title: "AeroRun Lightweight Sneakers", price: 75.50, desc: "Breathable mesh runners built for comfort, agility, and cross-training longevity.", image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500&q=80" },
+            { id: 3, title: "Minimalist Matte Stainless Flask", price: 29.95, desc: "Vacuum insulated water bottle that keeps liquids ice cold for 24 hours or piping hot for 12 hours.", image: "https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=500&q=80" }
+        ];
+
+        let products = JSON.parse(localStorage.getItem('megamart_products'));
+        if (!products || products.length === 0) {
+            products = defaultProducts;
+            localStorage.setItem('megamart_products', JSON.stringify(products));
+        }
+
+        const productGrid = document.getElementById('productGrid');
+        const emptyState = document.getElementById('emptyState');
+        const productCount = document.getElementById('productCount');
+        const searchBar = document.getElementById('searchBar');
+        const modalBackdrop = document.getElementById('modalBackdrop');
+        const productForm = document.getElementById('productForm');
+        const openModalBtn = document.getElementById('openModalBtn');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        
+        const imageFileInput = document.getElementById('prodImageFile');
+        const triggerFileBtn = document.getElementById('triggerFileBtn');
+        const uploadBox = document.getElementById('uploadBox');
+        const imagePreview = document.getElementById('imagePreview');
+        const uploadPlaceholder = document.getElementById('uploadPlaceholder');
+
+        let tempImageBase64 = "";
+
+        // Render products into grid UI
+        function renderProducts(searchQuery = '') {
+            productGrid.innerHTML = '';
+            const query = searchQuery.toLowerCase().trim();
+            const filtered = products.filter(p => p.title.toLowerCase().includes(query) || p.desc.toLowerCase().includes(query));
+
+            productCount.innerText = `Showing ${filtered.length} item${filtered.length === 1 ? '' : 's'}`;
+
+            if (filtered.length === 0) {
+                emptyState.classList.remove('hidden');
+                return;
+            }
+            emptyState.classList.add('hidden');
+
+            filtered.forEach(product => {
+                const card = document.createElement('div');
+                card.className = "bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 flex flex-col group fade-in";
+                
+                card.innerHTML = `
+                    <div class="relative overflow-hidden aspect-square bg-gray-100 flex items-center justify-center">
+                        <img src="${product.image}" alt="${product.title}" class="object-cover w-full h-full group-hover:scale-105 transition duration-500">
+                    </div>
+                    <div class="p-4 flex flex-col flex-grow justify-between">
+                        <div>
+                            <h3 class="font-bold text-gray-800 text-sm line-clamp-1 group-hover:text-amber-600 transition">${product.title}</h3>
+                            <p class="text-xs text-gray-500 mt-1 line-clamp-2">${product.desc}</p>
+                        </div>
+                        <div class="mt-4 flex items-center justify-between">
+                            <span class="text-lg font-black text-slate-900">$${parseFloat(product.price).toFixed(2)}</span>
+                            <div class="flex gap-2 items-center">
+                                <button type="button" onclick="buyViaWhatsApp('${encodeURIComponent(product.title)}', '${product.price}')" class="bg-emerald-500 text-white hover:bg-emerald-600 px-3 py-1.5 rounded-lg transition text-xs font-bold flex items-center gap-1 cursor-pointer">
+                                    <i class="fa-brands fa-whatsapp text-sm"></i> Buy
+                                </button>
+                                <button type="button" onclick="deleteProduct(${product.id})" class="text-gray-400 hover:text-red-500 px-1 text-sm transition" title="Delete listing">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                productGrid.appendChild(card);
+            });
+        }
+
+        // WhatsApp Custom Message Redirection API Link Generator
+        window.buyViaWhatsApp = function(title, price) {
+            const cleanTitle = decodeURIComponent(title);
+            // Constructing a structured sales text for your chat dashboard
+            const message = `Hello! I want to buy this product from your shop:\n\n🛍️ *Product:* ${cleanTitle}\n💰 *Price:* $${price}\n\nIs this item still available?`;
+            
+            // Encode message for proper URL syntax parsing
+            const encodedMessage = encodeURIComponent(message);
+            const whatsappURL = `https://wa.me/${MY_WHATSAPP_NUMBER}?text=${encodedMessage}`;
+            
+            // Fire open a new window direct tab onto chat
+            window.open(whatsappURL, '_blank');
+        }
+
+        // Live Search Filtering
+        searchBar.addEventListener('input', (e) => {
+            renderProducts(e.target.value);
+        });
+
+        // Toggle Modal Functions
+        openModalBtn.addEventListener('click', () => {
+            modalBackdrop.classList.remove('hidden');
+            modalBackdrop.classList.add('flex');
+        });
+
+        function closeFormModal() {
+            modalBackdrop.classList.remove('flex');
+            modalBackdrop.classList.add('hidden');
+            productForm.reset();
+            imagePreview.src = "";
+            imagePreview.classList.add('hidden');
+            uploadPlaceholder.classList.remove('hidden');
+            tempImageBase64 = "";
+        }
+
+        closeModalBtn.addEventListener('click', closeFormModal);
+
+        // File Selection handling
+        triggerFileBtn.addEventListener('click', (e) => { e.stopPropagation(); imageFileInput.click(); });
+        uploadBox.addEventListener('click', () => { imageFileInput.click(); });
+
+        imageFileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    tempImageBase64 = event.target.result;
+                    imagePreview.src = tempImageBase64;
+                    imagePreview.classList.remove('hidden');
+                    uploadPlaceholder.classList.add('hidden');
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Handle Add New Product Form Submit
+        productForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const title = document.getElementById('prodTitle').value;
+            const price = parseFloat(document.getElementById('prodPrice').value);
+            const desc = document.getElementById('prodDesc').value;
+            const finalImage = tempImageBase64 || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=500&q=80";
+
+            const newProduct = {
+                id: Date.now(),
+                title: title,
+                price: price,
+                desc: desc,
+                image: finalImage
+            };
+
+            products.unshift(newProduct); 
+            localStorage.setItem('megamart_products', JSON.stringify(products));
+            renderProducts(); 
+            closeFormModal(); 
+        });
+
+        window.deleteProduct = function(id) {
+            if(confirm("Are you sure you want to delete this listing?")) {
+                products = products.filter(p => p.id !== id);
+                localStorage.setItem('megamart_products', JSON.stringify(products));
+                renderProducts();
+            }
+        }
+
+        renderProducts();
+    </script>
+</body>
+</html>
